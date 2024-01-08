@@ -8,8 +8,8 @@ module "iam_eks_s3_role" {
   role_name = "s3-fullaccess"
 
   role_policy_arns = {
-    s3 = "arn:aws:iam::aws:policy/AmazonS3FullAccess" #"module.iam_policy.arn"
-    batch="arn:aws:iam::aws:policy/AWSBatchFullAccess"
+    s3    = "arn:aws:iam::aws:policy/AmazonS3FullAccess" #"module.iam_policy.arn"
+    batch = "arn:aws:iam::aws:policy/AWSBatchFullAccess"
   }
 
   oidc_providers = {
@@ -24,7 +24,7 @@ resource "kubernetes_service_account" "s3" {
   metadata {
     name = "s3-fullaccess"
     annotations = {
-        "eks.amazonaws.com/role-arn" = module.iam_eks_s3_role.iam_role_arn
+      "eks.amazonaws.com/role-arn" = module.iam_eks_s3_role.iam_role_arn
     }
   }
 }
@@ -74,7 +74,7 @@ resource "kubernetes_deployment" "backend" {
 
           env {
             name  = "aws.batch.job-queue"
-            value =  module.batch.job_queues.high_priority.arn
+            value = module.batch.job_queues.high_priority.arn
           }
           env {
             name  = "aws.batch.bucket"
@@ -82,6 +82,10 @@ resource "kubernetes_deployment" "backend" {
           }
           env {
             name  = "aws.batch.region"
+            value = "us-west-2"
+          }
+          env {
+            name  = "aws.batch.batchRegion"
             value = "us-west-2"
           }
           env {
@@ -97,8 +101,12 @@ resource "kubernetes_deployment" "backend" {
             value = module.batch.job_definitions.example.arn
           }
           env {
-            name = "logging.level.software.amazon"
-            value ="TRACE"
+            name  = "logging.level.software.amazon"
+            value = "error"
+          }
+          env {
+            name  = "aws.batch.awsLogGroupName"
+            value = aws_cloudwatch_log_group.this.name
           }
         }
       }

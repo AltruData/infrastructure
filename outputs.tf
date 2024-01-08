@@ -51,5 +51,5 @@ output "private_mongodb_uri" {
 
 output "arn" {
   description = "arn"
-  value       =  module.s3_bucket.s3_bucket_id
+  value       = aws_cloudwatch_log_group.this.name
 }               

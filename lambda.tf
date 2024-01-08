@@ -26,7 +26,7 @@ module "notifer" {
   ]
   runtime                = "nodejs18.x" # Adjust to the runtime you are using
   create_package         = false
-  local_existing_package = "../../notifier/myFunction.zip"
+  local_existing_package = "./myFunction.zip"
 
   # vpc_subnet_ids                     =  module.vpc.private_subnets
   # vpc_security_group_ids             = [module.vpc.default_security_group_id]
