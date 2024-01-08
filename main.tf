@@ -15,7 +15,7 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  cluster_name = "education-eks-${random_string.suffix.result}"
+  cluster_name = "eks-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -50,13 +50,33 @@ module "vpc" {
   }
 }
 
+resource "aws_iam_role" "ecr-pull" {
+  name = "eks-node-group"
+
+  assume_role_policy = jsonencode({
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+    }]
+    Version = "2012-10-17"
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecr-pull-policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.ecr-pull.name
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "19.15.3"
 
   cluster_name    = local.cluster_name
   cluster_version = "1.27"
-  enable_irsa = true
+  enable_irsa     = true
 
   vpc_id                         = module.vpc.vpc_id
   subnet_ids                     = module.vpc.private_subnets
@@ -64,6 +84,16 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
+  }
+  create_iam_role          = true
+  iam_role_name            = "eks-managed-node-group-trusetic"
+  iam_role_use_name_prefix = false
+  iam_role_description     = "EKS managed node group complete trusetic role"
+  iam_role_tags = {
+    Purpose = "Protector of the kubelet"
+  }
+  iam_role_additional_policies = {
+    AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
 
   eks_managed_node_groups = {
@@ -95,7 +125,7 @@ data "aws_iam_policy" "ebs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 module "ebs_csi_irsa_role" {
-  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
   role_name             = "ebs-csi"
   attach_ebs_csi_policy = true
