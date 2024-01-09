@@ -1,5 +1,5 @@
 locals {
-  mongodb_uri = "mongodb://${var.mongodb_username}:${var.mongodb_password}@${kubernetes_service.mongodb.spec.0.cluster_ip}:27017/"
+  mongodb_uri = "mongodb://${var.mongodb_username}:${var.mongodb_password}@${kubernetes_service.mongodb.status.0.load_balancer.0.ingress.0.hostname}:27017/"
 }
 
 

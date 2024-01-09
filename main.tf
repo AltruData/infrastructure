@@ -70,6 +70,19 @@ resource "aws_iam_role_policy_attachment" "ecr-pull-policy" {
   role       = aws_iam_role.ecr-pull.name
 }
 
+resource "aws_iam_role_policy_attachment" "eks_node_group_one_attachment" {
+  role       = aws_iam_role.ecr-pull.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_group_two_attachment" {
+  role       = aws_iam_role.ecr-pull.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+
+
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "19.15.3"
@@ -84,16 +97,7 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
-  }
-  create_iam_role          = true
-  iam_role_name            = "eks-managed-node-group-trusetic"
-  iam_role_use_name_prefix = false
-  iam_role_description     = "EKS managed node group complete trusetic role"
-  iam_role_tags = {
-    Purpose = "Protector of the kubelet"
-  }
-  iam_role_additional_policies = {
-    AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    create_iam_role=false
   }
 
   eks_managed_node_groups = {
@@ -105,6 +109,7 @@ module "eks" {
       min_size     = 1
       max_size     = 3
       desired_size = 2
+      iam_role_arn = aws_iam_role.ecr-pull.arn
     }
 
     two = {
@@ -115,6 +120,7 @@ module "eks" {
       min_size     = 1
       max_size     = 2
       desired_size = 1
+      iam_role_arn = aws_iam_role.ecr-pull.arn
     }
   }
 }

@@ -49,7 +49,13 @@ output "private_mongodb_uri" {
 }
 
 
-output "arn" {
+output "image_pull_batch" {
   description = "arn"
-  value       = aws_cloudwatch_log_group.this.name
-}               
+  value       =module.batch.instance_iam_role_arn
+}
+      
+
+output "image_pull_eks" {
+  description = "arn"
+  value       =aws_iam_role.ecs_task_execution_role.arn
+}
