@@ -43,6 +43,11 @@ output "mongodb_uri" {
   value       = "mongodb://${var.mongodb_username}:${var.mongodb_password}@${kubernetes_service.mongodb.status.0.load_balancer.0.ingress.0.hostname}:27017"
 }
 
+output "jupyter_uri" {
+  description = "jupter_uri"
+  value = kubernetes_service.jupyter.status.0.load_balancer.0.ingress.0.hostname
+}
+
 output "private_mongodb_uri" {
   description = "private mongodb uri"
   value       = "mongodb://${var.mongodb_username}:${var.mongodb_password}@${kubernetes_service.mongodb.spec.0.cluster_ip}:27017/"
@@ -51,11 +56,11 @@ output "private_mongodb_uri" {
 
 output "image_pull_batch" {
   description = "arn"
-  value       =module.batch.instance_iam_role_arn
+  value       = aws_iam_role.ecs_task_execution_role.arn
 }
       
 
 output "image_pull_eks" {
   description = "arn"
-  value       =aws_iam_role.ecs_task_execution_role.arn
+  value       = aws_iam_role.ecr-pull.arn
 }

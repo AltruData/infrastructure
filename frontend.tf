@@ -1,8 +1,5 @@
 resource "kubernetes_deployment" "frontend" {
-  depends_on = [
-    kubernetes_service.frontend
-  ]
-
+  depends_on = [ kubernetes_service.frontend ]
   metadata {
     name = "frontend"
     labels = {
